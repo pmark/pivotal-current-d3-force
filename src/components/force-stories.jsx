@@ -121,7 +121,7 @@ function fade(nodeOpacity, linkOpacity, reset, component) {
         return thisOpacity;
       });
 
-    _svgLinks.style('stroke-opacity', (o) => reset ? linkOpacity : (o.source === d || o.target === d ? 1 : linkOpacity));
+    _svgLinks.style('opacity', (o) => reset ? linkOpacity : (o.source === d || o.target === d ? 1 : linkOpacity));
     // _svgNodes.selectAll('.node').classed('highlight', (o) => (o.source === d || o.target === d));
   };
 }
