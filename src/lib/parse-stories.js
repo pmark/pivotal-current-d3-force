@@ -37,6 +37,7 @@ const parseStories = (stories) => {
     story.estimate = story.estimate || 0;
 
     o.stories[story.id] = {
+      id: story.id,
       name: story.name,
       storyType: story.story_type,
       owners: initialsArray,

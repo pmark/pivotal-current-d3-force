@@ -126,6 +126,12 @@ function fade(nodeOpacity, linkOpacity, reset, component) {
   };
 }
 
+const click = (d) => {
+  if (isStory(d)) {
+    const win = window.open(`https://www.pivotaltracker.com/story/show/${d.id}`, '_blank');
+    win.focus();
+  }
+}
 
 const enterNode = (selection, component) => {
   _svgNodes = selection;
@@ -142,6 +148,7 @@ const enterNode = (selection, component) => {
       .classed('bug', isBug)
       .classed('feature', isFeature)
       .classed('chore', isChore)
+      .on('click', click)
       .on('mouseover', fade(0.075, 0.05, false, component))
       .on('mouseout', fade(1.0, 0.25, true, component));
 
@@ -161,14 +168,14 @@ const enterNode = (selection, component) => {
 
   selection.filter(isChore)
     .append('text')
-    .text('⚙')
+    .text('♦') // ⚙ © ♦ ÷
     .style('font-size', d => d.size+'px')
     .attr('x', d => -d.size*0.5)
     .attr('y', d => d.size*0.3)
 
   selection.filter(isBug)
     .append('text')
-    .text('◉') // Φ Θ ◉
+    .text('Ø') // Φ Θ ◉ œ Ø
     .style('font-size', d => d.size+'px')
     .attr('x', d => -d.size*0.5)
     .attr('y', d => d.size*0.33)
