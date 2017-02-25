@@ -17,8 +17,10 @@ if (parsedStories.labels) {
 }
 
 const labelRank = (storyLabels=[]) => {
-  const item = sortedLabels.find((sortedLabel, index) => storyLabels.includes(sortedLabel) ? index : false);
-  const rank = sortedLabels.indexOf(item);
+  const rank = storyLabels.reduce((memo, item) => {
+    let tmpRank = sortedLabels.indexOf(item);
+    return Math.min(tmpRank, memo);
+  }, sortedLabels.length) + 1;
 
   let normalized = 3;
   if (rank === 1 || rank === 2) {
@@ -33,7 +35,6 @@ const links = [];
 
 Object.keys(parsedStories.owners).forEach((ownerName) => {
   const owner = parsedStories.owners[ownerName];
-  console.log('owner:', owner)
   const ownerKey = `owner-${owner.id}`;
 
   nodes.push({
