@@ -3,7 +3,7 @@ import React         from 'react';
 import ReactDOM      from 'react-dom';
 import { Provider }  from 'react-redux';
 import { makeStore } from './lib/store';
-import Force         from './components/force-stories.jsx';
+import Force         from './components/force-epics.jsx';
 import parseStories  from './lib/parse-stories';
 
 const stories = require('json!../stories.json');
@@ -33,6 +33,7 @@ const labelRank = (storyLabels=[]) => {
 const nodes = [];
 const links = [];
 
+// Add people nodes
 Object.keys(parsedStories.owners).forEach((ownerName) => {
   const owner = parsedStories.owners[ownerName];
   const ownerKey = `owner-${owner.id}`;
@@ -49,7 +50,8 @@ Object.keys(parsedStories.owners).forEach((ownerName) => {
   });
 });
 
-// console.log('parsing stories', parsedStories)
+/*
+// Add stories
 Object.keys(parsedStories.stories).forEach((storyId) => {
   const story = parsedStories.stories[storyId];
   const storyKey = `${story.storyType}-${nodes.length}`;
@@ -82,6 +84,27 @@ Object.keys(parsedStories.stories).forEach((storyId) => {
     });
   })
 });
+
+// Add epic nodes
+Object.keys(parsedStories.labels).forEach((labelName, index) => {
+  const labelStoryCount = parsedStories.labels[labelName];
+  console.log(labelName, labelStoryCount);
+
+  const labelKey = `label-${index}`;
+  console.log('labelKey:', labelKey);
+
+  nodes.push({
+    key: labelKey,
+    id: labelKey,
+    x: 480,
+    y: 240,
+    size: 25 + (labelStoryCount),
+    text: labelName,
+    type: 'epicLabel',
+    storyCount: labelStoryCount,
+  });
+});
+*/
 
 const store = makeStore();
 const app = <Provider store={store}>

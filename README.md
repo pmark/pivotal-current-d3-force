@@ -27,9 +27,7 @@ open http://localhost:8080
   * [See how-to-create-linked-href-labels-in-a-d3-circle-packing-chart](http://stackoverflow.com/questions/22460816/how-to-create-linked-href-labels-in-a-d3-circle-packing-chart)
   * [See 2014-10-08-fun-with-d3js-data-visualization-eye-candy-with-streaming-json](https://www.pubnub.com/blog/2014-10-08-fun-with-d3js-data-visualization-eye-candy-with-streaming-json/)
 - Choose epic, load only those stories
-- Should be able to 
-- Still allow overall view with every story and person so you can see which epics
-  each person is working on
+- Should be able to see all stories in all epics
 
 ## Stats
 
