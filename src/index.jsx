@@ -84,6 +84,7 @@ Object.keys(parsedStories.stories).forEach((storyId) => {
     });
   })
 });
+*/
 
 // Add epic nodes
 Object.keys(parsedStories.labels).forEach((labelName, index) => {
@@ -100,11 +101,11 @@ Object.keys(parsedStories.labels).forEach((labelName, index) => {
     y: 240,
     size: 25 + (labelStoryCount),
     text: labelName,
-    type: 'epicLabel',
+    type: 'epic',
     storyCount: labelStoryCount,
   });
 });
-*/
+
 
 const store = makeStore();
 const app = <Provider store={store}>

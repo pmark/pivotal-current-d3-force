@@ -54,7 +54,7 @@ const isAccepted = (d) => d.status === 'accepted';
 const isRejected = (d) => d.status === 'rejected';
 const isFeature = (d) => d.type === 'feature';
 const isBug = (d) => d.type === 'bug';
-const isEpicLabel = (d) => d.type === 'epicLabel';
+const isEpic = (d) => d.type === 'epic';
 const isChore = (d) => d.type === 'chore';
 const isNotFeature = (d) => d.type !== 'feature';
 
@@ -147,24 +147,29 @@ const enterNode = (selection, component) => {
       .classed('rejected', isRejected)
       .classed('story', isStory)
       .classed('bug', isBug)
-      .classed('epic-label', isEpicLabel)
+      .classed('epic-label', isEpic)
       .classed('feature', isFeature)
       .classed('chore', isChore)
       .on('click', click)
       .on('mouseover', fade(0.075, 0.05, false, component))
       .on('mouseout', fade(1.0, 0.25, true, component));
 
-  selection.filter(isEpicLabel)
+  selection.filter(isEpic)
     .append('circle')
     .attr('r', d => d.size)
+    .attr('x', d => d.x)
+    .attr('y', d => d.y);
+
+  selection.filter(isEpic)
+    .append('text')
+    .text(d => d.text)
+    .call(wrapText, 100);
 
   selection.filter(isPerson)
     .append('circle')
     .attr('r', d => d.size)
-    .attr('cx', d => d.x)
-    .attr('cy', d => d.y)
-    // .attr('stroke-dasharray', d => d.type === 'chore' && '2, 5')
-    // .style('fill', d => isPerson(d) ? 'white' : storyFillColor(d));
+    .attr('x', d => d.x)
+    .attr('y', d => d.y);
 
   selection.filter(isFeature)
     .append('text')
@@ -280,8 +285,7 @@ class Force extends React.Component {
 
     const xForce = forceX((d) => labelX(d));
     const yForce = forceY((d) => foci[d.type] ? foci[d.type].y : console.assert(false, d.type));
-    const collisionForce = forceCollide((d) => 
-      d.size * (isPerson(d) ? 1.75 : 0.66));
+    const collisionForce = forceCollide(collisionConfig);
 
     simulation.force('y', yForce);
     simulation.force('x', xForce);
@@ -352,9 +356,9 @@ const foci = {
     x: styles.width * 0.5 + styles.width * 0.5,
     y: styles.height * 0.025
   },
-  epicLabel: {
+  epic: {
     x: styles.width * 0.5,
-    y: styles.height * 0.5
+    y: styles.height * 0.15
   },
   undefined: {
     x: styles.width * 0.5,
@@ -371,7 +375,7 @@ const foci = {
 };
 
 const labelX = (d => {
-  if (isPerson(d)) {
+  if (isPerson(d) || isEpic(d)) {
     return styles.width * 0.5;
   }
 
@@ -384,8 +388,22 @@ const labelX = (d => {
   else {
     return styles.width * 0.9;
   }
-
 });
+
+const collisionConfig = (d) => {
+  let scale = 1.0;
+  if (isStory(d)) {
+    scale = 0.66;
+  }
+  else if (isEpic(d)) {
+    scale = 1.05;
+  }
+  else {
+    // person
+    scale = 1.75;
+  }
+  return d.size * scale;
+};
 
 export default connect((state) => state, actionCreators)(Force);
 

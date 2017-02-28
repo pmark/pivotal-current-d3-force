@@ -272,8 +272,7 @@ class Force extends React.Component {
 
     const xForce = forceX((d) => labelX(d));
     const yForce = forceY((d) => foci[d.type] ? foci[d.type].y : console.assert(false, d.type));
-    const collisionForce = forceCollide((d) => 
-      d.size * (isPerson(d) ? 1.75 : 0.66));
+    const collisionForce = forceCollide((d) => d.size * (isStory(d) ? 0.66 : 3.75));
 
     simulation.force('y', yForce);
     simulation.force('x', xForce);
