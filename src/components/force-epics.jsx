@@ -133,6 +133,9 @@ const click = (d) => {
     const win = window.open(`https://www.pivotaltracker.com/story/show/${d.id}`, '_blank');
     win.focus();
   }
+  else {
+    console.log('clicked', d)
+  }
 }
 
 const getPathData = () => {
@@ -230,6 +233,17 @@ const enterNode = (selection, component) => {
   return node;
 };
 
+const exitNode = (selection, component) => {
+  /*
+  selection.transition().duration(1000)
+    .selectAll('circle')
+    .attr('x', d => -100)
+    .attr('y', d => 480)
+    .delay(1000)
+    .remove();
+*/
+};
+
 var updateNode = (selection) => {
   let p = null;
   selection
@@ -287,7 +301,7 @@ class Force extends React.Component {
         id: 'curvedTextPath'
       });
 
-    const nodes = props.nodes.slice();
+    let nodes = props.nodes.slice();
     const links = props.links.slice();
 
     links.forEach(d => {
@@ -295,17 +309,30 @@ class Force extends React.Component {
       _linkedByIndex[key] = 1;
     });
 
-    var d3Nodes = this.d3Graph.selectAll('.node')
-      .data(nodes); //, (node) => node.key);
-    d3Nodes.enter().append('g').call(enterNode, this); //.call(nodeDrag);
-    d3Nodes.exit().remove();
-    d3Nodes.call(updateNode);
+    const update = () => {
+      var d3Nodes = this.d3Graph.selectAll('.node').data(nodes);
+      d3Nodes.enter().append('g').call(enterNode, this); //.call(nodeDrag);
+      
+      d3Nodes.exit().transition().duration(500)
+        .attr('transform', (d) => `translate(480, -100)`)
+        .remove();
 
-    var d3Links = this.d3Graph.selectAll('.link')
-      .data(links); //, (link) => link.key);
-    d3Links.enter().insert('line', '.node').call(enterLink);
-    d3Links.exit().remove();
-    d3Links.call(updateLink);
+      d3Nodes.call(updateNode);
+
+      var d3Links = this.d3Graph.selectAll('.link').data(links);
+      d3Links.enter().insert('line', '.node').call(enterLink);
+      d3Links.exit().remove();
+      d3Links.call(updateLink);
+    }
+
+    setInterval(() => { 
+      nodes.splice(nodes.length-1, 1);
+      console.log(nodes.length);
+      update();
+
+    }, 1500);
+
+    update();
 
     simulation.velocityDecay(0.8);
     simulation.nodes(nodes);

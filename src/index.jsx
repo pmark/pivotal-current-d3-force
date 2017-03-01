@@ -37,6 +37,7 @@ const nodes = [];
 const links = [];
 
 // Add people nodes
+
 Object.keys(parsedStories.owners).forEach((ownerName) => {
   const owner = parsedStories.owners[ownerName];
   const ownerKey = `owner-${owner.id}`;
