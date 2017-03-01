@@ -15,6 +15,10 @@ let Constants = {};
 const fill = d3.scale.category20c();
 const simulation = forceSimulation();
 
+let _nodes = null;
+let _links = null;
+let _d3Graph = null;
+
 // *****************************************************
 // ** d3 functions to manipulate attributes
 // *****************************************************
@@ -135,6 +139,10 @@ const click = (d) => {
   }
   else {
     console.log('clicked', d)
+    _nodes = _nodes.filter(n => {
+      return n.type === 'owner'
+    });
+    update();
   }
 }
 
@@ -170,8 +178,8 @@ const enterNode = (selection, component) => {
       .classed('feature', isFeature)
       .classed('chore', isChore)
       .on('click', click)
-      .on('mouseover', fade(0.075, 0.05, false, component))
-      .on('mouseout', fade(1.0, 0.25, true, component));
+      // .on('mouseover', fade(0.075, 0.05, false, component))
+      // .on('mouseout', fade(1.0, 0.25, true, component));
 
   selection.filter(isEpic)
     .append('circle')
@@ -244,7 +252,7 @@ const exitNode = (selection, component) => {
 */
 };
 
-var updateNode = (selection) => {
+const updateNode = (selection) => {
   let p = null;
   selection
     .attr('cx', (d) => {p=d.size*1.1; d.x = Math.max(p, Math.min(styles.width - p, d.x)) })
@@ -252,13 +260,13 @@ var updateNode = (selection) => {
     .attr('transform', (d) => `translate(${d.x}, ${d.y})`);
 };
 
-var enterLink = (selection) => {
+const enterLink = (selection) => {
   _svgLinks = selection;
   selection.classed('link', true)
     .attr('stroke-width', (d) => 2);
 };
 
-var updateLink = (selection) => {
+const updateLink = (selection) => {
   selection
     .attr('x1', (d) => d.source.x)
     .attr('y1', (d) => d.source.y)
@@ -266,12 +274,32 @@ var updateLink = (selection) => {
     .attr('y2', (d) => d.target.y);
 };
 
-var updateGraph = (selection) => {
+const updateGraph = (selection) => {
   selection.selectAll('.node')
     .call(updateNode);
   selection.selectAll('.link')
     .call(updateLink);
 };
+
+const update = () => {
+  const d3Nodes = _d3Graph.selectAll('.node').data(_nodes);
+  d3Nodes.enter().append('g').call(enterNode, this); //.call(nodeDrag);
+  
+  d3Nodes.exit().transition().duration(500)
+    .attr('transform', (d) => `translate(480, -100)`)
+    .remove();
+
+  d3Nodes.call(updateNode);
+
+  const d3Links = _d3Graph.selectAll('.link').data(_links);
+  d3Links.enter().insert('line', '.node').call(enterLink);
+  d3Links.exit().remove();
+  d3Links.call(updateLink);
+
+  simulation.velocityDecay(0.8);
+  simulation.nodes(_nodes);
+}
+
 
 // *****************************************************
 // ** Graph and App components
@@ -292,52 +320,24 @@ class Force extends React.Component {
       // console.log('already ready')
       return;
     }
-    this.d3Graph = d3.select(ReactDOM.findDOMNode(this.refs.graph));
+    _d3Graph = d3.select(ReactDOM.findDOMNode(this.refs.graph));
 
-    this.d3Graph.append('defs')
+    _d3Graph.append('defs')
       .append('path')
       .attr({
         d: getPathData(),
         id: 'curvedTextPath'
       });
 
-    let nodes = props.nodes.slice();
-    const links = props.links.slice();
+    _nodes = props.nodes.slice();
+    _links = props.links.slice();
 
-    links.forEach(d => {
+    _links.forEach(d => {
       const key = `${d.source},${d.target}`;
       _linkedByIndex[key] = 1;
     });
 
-    const update = () => {
-      var d3Nodes = this.d3Graph.selectAll('.node').data(nodes);
-      d3Nodes.enter().append('g').call(enterNode, this); //.call(nodeDrag);
-      
-      d3Nodes.exit().transition().duration(500)
-        .attr('transform', (d) => `translate(480, -100)`)
-        .remove();
-
-      d3Nodes.call(updateNode);
-
-      var d3Links = this.d3Graph.selectAll('.link').data(links);
-      d3Links.enter().insert('line', '.node').call(enterLink);
-      d3Links.exit().remove();
-      d3Links.call(updateLink);
-    }
-
-    setInterval(() => { 
-      nodes.splice(nodes.length-1, 1);
-      console.log(nodes.length);
-      update();
-
-    }, 1500);
-
-    update();
-
-    simulation.velocityDecay(0.8);
-    simulation.nodes(nodes);
-
-    const linkForce = forceLink(props.links.slice())
+    const linkForce = forceLink(_links)
       .id(d => d.index)
       .strength(.0001) // very low strength
 
@@ -352,6 +352,8 @@ class Force extends React.Component {
     // simulation.force('charge', forceManyBody().strength(10));
     // simulation.force('center', forceCenter(styles.width/2, styles.height/2));
 
+    update();
+
     this.ready = true;
   }
 
@@ -364,7 +366,7 @@ class Force extends React.Component {
       // after force calculation starts, call updateGraph
       // which uses d3 to manipulate the attributes,
       // and React doesn't have to go through lifecycle on each tick
-      this.d3Graph.call(updateGraph);
+      _d3Graph.call(updateGraph);
 
     });
     */
@@ -392,7 +394,7 @@ function tick() {
   // after force calculation starts, call updateGraph
   // which uses d3 to manipulate the attributes,
   // and React doesn't have to go through lifecycle on each tick
-  this.d3Graph.call(updateGraph);
+  _d3Graph.call(updateGraph);
 };
 
 // foci is a dictionary that assigns the x and y value based
