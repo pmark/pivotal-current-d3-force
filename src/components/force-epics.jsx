@@ -134,6 +134,21 @@ const click = (d) => {
   }
 }
 
+const getPathData = () => {
+  /*
+  M cx cy
+  m -r, 0
+  a r,r 0 1,0 (r * 2),0
+  a r,r 0 1,0 -(r * 2),0
+   */
+  const r = 70 * 0.925;
+  const x = 0;
+  const y = 0;
+  return `M ${x}, ${y} m -${r}, 0
+        a ${r},${r} 0 1,0 ${r*2},0
+        a ${r},${r} 0 1,0 -${r*2},0`;
+}
+
 const enterNode = (selection, component) => {
   _svgNodes = selection;
   const node = selection
@@ -162,8 +177,15 @@ const enterNode = (selection, component) => {
 
   selection.filter(isEpic)
     .append('text')
-    .text(d => d.text)
-    .call(wrapText, 100);
+      .attr({
+        transform: 'rotate(45, 0, 0)',
+      })
+      .append('textPath')
+      .attr({
+        startOffset: '50%',
+        'xlink:href': '#curvedTextPath',
+      })
+      .text(d => d.text);
 
   selection.filter(isPerson)
     .append('circle')
@@ -208,10 +230,10 @@ const enterNode = (selection, component) => {
 };
 
 var updateNode = (selection) => {
-  const padding = 30;
+  let p = null;
   selection
-    .attr('cx', (d) => (d.x = Math.max(padding, Math.min(styles.width - padding, d.x)) ))
-    .attr('cy', (d) => (d.y = Math.max(padding, Math.min(styles.height - padding, d.y)) ))
+    .attr('cx', (d) => {p=d.size*1.1; d.x = Math.max(p, Math.min(styles.width - p, d.x)) })
+    .attr('cy', (d) => {p=d.size*1.1; d.y = Math.max(p, Math.min(styles.height - p, d.y)) })
     .attr('transform', (d) => `translate(${d.x}, ${d.y})`);
 };
 
@@ -255,7 +277,14 @@ class Force extends React.Component {
       return;
     }
     this.d3Graph = d3.select(ReactDOM.findDOMNode(this.refs.graph));
-    
+
+    this.d3Graph.append('defs')
+      .append('path')
+      .attr({
+        d: getPathData(),
+        id: 'curvedTextPath'
+      });
+
     const nodes = props.nodes.slice();
     const links = props.links.slice();
 

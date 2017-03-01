@@ -99,7 +99,7 @@ Object.keys(parsedStories.labels).forEach((labelName, index) => {
     id: labelKey,
     x: 480,
     y: 240,
-    size: 25 + (labelStoryCount),
+    size: 70, //25 + (labelStoryCount),
     text: labelName,
     type: 'epic',
     storyCount: labelStoryCount,
