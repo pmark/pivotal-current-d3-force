@@ -5,6 +5,9 @@ import { Provider }  from 'react-redux';
 import { makeStore } from './lib/store';
 import Force         from './components/force-epics.jsx';
 import parseStories  from './lib/parse-stories';
+import Constants     from './lib/constants';
+
+console.log('Constants:', Constants)
 
 const stories = require('json!../stories.json');
 
@@ -87,19 +90,22 @@ Object.keys(parsedStories.stories).forEach((storyId) => {
 */
 
 // Add epic nodes
-Object.keys(parsedStories.labels).forEach((labelName, index) => {
-  const labelStoryCount = parsedStories.labels[labelName];
-  console.log(labelName, labelStoryCount);
+const labelNames = Object.keys(parsedStories.labels); //.concat(Object.keys(parsedStories.labels));
+const width = 960;
+const leftMargin =  Constants.EpicRadius + Math.max(0, (width / 2) - (labelNames.length * Constants.EpicRadius));
+const div = (width / labelNames.length);
+console.log('leftMargin:', leftMargin)
 
+labelNames.forEach((labelName, index) => {
+  const labelStoryCount = parsedStories.labels[labelName];
   const labelKey = `label-${index}`;
-  console.log('labelKey:', labelKey);
 
   nodes.push({
     key: labelKey,
     id: labelKey,
-    x: 480,
-    y: 240,
-    size: 70, //25 + (labelStoryCount),
+    x: (width/2) + ((index % 2) ? 1 : -1) * index * (Constants.EpicRadius+5)/4,
+    y: Constants.EpicRadius*2.2,
+    size: Constants.EpicRadius,
     text: labelName,
     type: 'epic',
     storyCount: labelStoryCount,
@@ -109,7 +115,7 @@ Object.keys(parsedStories.labels).forEach((labelName, index) => {
 
 const store = makeStore();
 const app = <Provider store={store}>
-  <Force nodes={nodes} links={links} />
+  <Force nodes={nodes} links={links} constants={Constants} />
 </Provider>
 
 const mountingPoint = document.createElement('div');

@@ -3,7 +3,7 @@ import ReactDOM from 'react-dom';
 import {connect}            from 'react-redux';
 import * as actionCreators  from '../lib/action-creators';
 import * as d3 from 'd3';
-import {forceSimulation, forceManyBody, forceLink, forceCenter, forceCollide, forceX, forceY} from 'd3-force';
+import { forceSimulation, forceManyBody, forceLink, forceCenter, forceCollide, forceX, forceY } from 'd3-force';
 
 const styles = {
   width   : 960,
@@ -11,7 +11,8 @@ const styles = {
   padding : 50,
 };
 
-var fill = d3.scale.category20c();
+let Constants = {};
+const fill = d3.scale.category20c();
 const simulation = forceSimulation();
 
 // *****************************************************
@@ -141,7 +142,7 @@ const getPathData = () => {
   a r,r 0 1,0 (r * 2),0
   a r,r 0 1,0 -(r * 2),0
    */
-  const r = 70 * 0.925;
+  const r = Constants.EpicRadius * 0.925;
   const x = 0;
   const y = 0;
   return `M ${x}, ${y} m -${r}, 0
@@ -178,7 +179,7 @@ const enterNode = (selection, component) => {
   selection.filter(isEpic)
     .append('text')
       .attr({
-        transform: 'rotate(45, 0, 0)',
+        transform: 'rotate(90, 0, 0)',
       })
       .append('textPath')
       .attr({
@@ -266,6 +267,7 @@ class Force extends React.Component {
 
   constructor(props) {
     super(props);
+    Constants = props.constants;
     this.state = {
       headerText: 'Current Sprint',
     };
@@ -312,8 +314,8 @@ class Force extends React.Component {
       .id(d => d.index)
       .strength(.0001) // very low strength
 
-    const xForce = forceX((d) => labelX(d));
-    const yForce = forceY((d) => foci[d.type] ? foci[d.type].y : console.assert(false, d.type));
+    const xForce = forceX(xPos);
+    const yForce = forceY(yPos);
     const collisionForce = forceCollide(collisionConfig);
 
     simulation.force('y', yForce);
@@ -371,7 +373,7 @@ function tick() {
 const foci = {
   owner: {
     x: styles.width * 0.5,
-    y: styles.height * 0.7
+    y: styles.height * 0.8
   },
   feature: {
     x: styles.width * 0.5,
@@ -403,9 +405,27 @@ const foci = {
   },
 };
 
-const labelX = (d => {
-  if (isPerson(d) || isEpic(d)) {
+const collisionConfig = (d) => {
+  let scale = 1.0;
+  if (isStory(d)) {
+    scale = 0.66;
+  }
+  else if (isEpic(d)) {
+    scale = 1.05;
+  }
+  else {
+    // person
+    scale = 1.25;
+  }
+  return d.size * scale;
+};
+
+const xPos = (d => {
+  if (isPerson(d)) {
     return styles.width * 0.5;
+  }
+  else if (isEpic(d)) {
+    return d.x;
   }
 
   if (d.rank === 1) {
@@ -419,20 +439,13 @@ const labelX = (d => {
   }
 });
 
-const collisionConfig = (d) => {
-  let scale = 1.0;
-  if (isStory(d)) {
-    scale = 0.66;
+const yPos = (d) => {
+  if (isEpic(d)) {
+    return d.y;
   }
-  else if (isEpic(d)) {
-    scale = 1.05;
-  }
-  else {
-    // person
-    scale = 1.75;
-  }
-  return d.size * scale;
-};
+
+  return foci[d.type] ? foci[d.type].y : console.assert(false, d.type)
+}
 
 export default connect((state) => state, actionCreators)(Force);
 
