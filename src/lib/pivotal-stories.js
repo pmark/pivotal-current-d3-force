@@ -73,8 +73,8 @@ class PivotalStories {
       // Create story node
       return {
         id: storyId,
-        x: Constants.ScreenWidth / 2,
-        y: 0,
+        x: Math.random() * Constants.ScreenWidth,
+        y: Math.random() * Constants.ScreenHeight / 4,
         size: Math.max(radius, radius * (story.points+1) * 0.8),
         text: story.name,
         type: story.storyType,

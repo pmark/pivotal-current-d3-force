@@ -219,8 +219,6 @@ const enterNode = (selection, component) => {
     .style('font-size', d => d.size+'px')
     // .attr('x', d => -d.size*0.5)
     // .attr('y', d => d.size*0.3)
-    // .attr('x', d => -d.size*0.5)
-    // .attr('y', d => d.size*0.3)
 
   node.filter(isChore)
     .append('text')
@@ -319,7 +317,7 @@ function update() {
 
   const linkForce = forceLink(_links)
     .id(d => d.id)
-    .strength(.05) // low strength
+    .strength(.025) // low strength
 
   const xForce = forceX(xPos);
   const yForce = forceY(yPos);
@@ -329,10 +327,10 @@ function update() {
   simulation.force('x', xForce);
   simulation.force('link', linkForce);
   simulation.force('collision', collisionForce);
-  // simulation.force('charge', forceManyBody().strength(10));
+  simulation.force('charge', forceManyBody().strength(-250));
   // simulation.force('center', forceCenter(styles.width/2, styles.height/2));
 
-  simulation.velocityDecay(0.5);
+  simulation.velocityDecay(0.25);
   simulation.nodes(_nodes);
 }
 
