@@ -168,23 +168,25 @@ const getPathData = () => {
 
 const enterNode = (selection, component) => {
   _svgNodes = selection;
+
   const node = selection
-      .attr('class', d => (isPerson(d) ? 'person' : 'story'))
-      .classed('node', true)
-      .classed('unstarted', isUnstarted)
-      .classed('started', isStarted)
-      .classed('finished', isFinished)
-      .classed('delivered', isDelivered)
-      .classed('accepted', isAccepted)
-      .classed('rejected', isRejected)
-      .classed('story', isStory)
-      .classed('bug', isBug)
-      .classed('epic-label', isEpic)
-      .classed('feature', isFeature)
-      .classed('chore', isChore)
-      .on('click', d => click(d, component))
-      .on('mouseover', fade(0.075, 0.05, false, component))
-      .on('mouseout', fade(1.0, 0.25, true, component));
+    .style('opacity', 0.0)
+    .attr('class', d => (isPerson(d) ? 'person' : 'story'))
+    .classed('node', true)
+    .classed('unstarted', isUnstarted)
+    .classed('started', isStarted)
+    .classed('finished', isFinished)
+    .classed('delivered', isDelivered)
+    .classed('accepted', isAccepted)
+    .classed('rejected', isRejected)
+    .classed('story', isStory)
+    .classed('bug', isBug)
+    .classed('epic-label', isEpic)
+    .classed('feature', isFeature)
+    .classed('chore', isChore)
+    .on('click', d => click(d, component))
+    .on('mouseover', fade(0.075, 0.05, false, component))
+    .on('mouseout', fade(1.0, 0.25, true, component));
 
   node.filter(isEpic)
     .append('circle')
@@ -208,29 +210,31 @@ const enterNode = (selection, component) => {
   node.filter(isPerson)
     .append('circle')
     .attr('r', d => d.size)
-    .attr('x', d => d.x)
-    .attr('y', d => d.y);
+    // .attr('x', d => d.x)
+    // .attr('y', d => d.y);
 
   node.filter(isFeature)
     .append('text')
     .text('★')  // ☆★
     .style('font-size', d => d.size+'px')
-    .attr('x', d => -d.size*0.5)
-    .attr('y', d => d.size*0.3)
+    // .attr('x', d => -d.size*0.5)
+    // .attr('y', d => d.size*0.3)
+    // .attr('x', d => -d.size*0.5)
+    // .attr('y', d => d.size*0.3)
 
   node.filter(isChore)
     .append('text')
     .text('♦') // ⚙ © ♦ ÷
     .style('font-size', d => d.size+'px')
-    .attr('x', d => -d.size*0.5)
-    .attr('y', d => d.size*0.3)
+    // .attr('x', d => -d.size*0.5)
+    // .attr('y', d => d.size*0.3)
 
   node.filter(isBug)
     .append('text')
     .text('Ø') // Φ Θ ◉ œ Ø
     .style('font-size', d => d.size+'px')
-    .attr('x', d => -d.size*0.5)
-    .attr('y', d => d.size*0.33)
+    // .attr('x', d => -d.size*0.5)
+    // .attr('y', d => d.size*0.33)
 
   // node.filter(isStory)
   //   .append('text')
@@ -243,7 +247,7 @@ const enterNode = (selection, component) => {
     .attr('y', 0)
     .text((d) => d.text)
 
-  return node;
+  return selection;
 };
 
 const exitNode = (selection, component) => {
@@ -289,10 +293,14 @@ const updateGraph = (selection) => {
 function update() {
   const d3Nodes = _d3Graph.selectAll('.node').data(_nodes, d => d.id);
 
-  d3Nodes.enter().append('g').call(enterNode, this); //.call(nodeDrag);
+  d3Nodes.enter().append('g').call(enterNode, this)
+    .transition().duration(750)
+    .style('opacity', 1)
+    //.call(nodeDrag);
 
-  d3Nodes.exit().transition().duration(500)
-    .attr('transform', (d) => `translate(${Constants.ScreenHeight}, -100)`)
+  d3Nodes.exit().transition().duration(1000)
+    .style('opacity', 0)
+    .attr('transform', (d) => `translate(${Constants.ScreenWidth/2}, ${Constants.ScreenHeight/2}), scale(0)`)
     .remove();
 
   d3Nodes.call(updateNode);
@@ -305,14 +313,13 @@ function update() {
 
   _linkedByIndex = {};
   _links.forEach(d => {
-    const key = linkId(d.source, d.target);
-    console.log('link key:', key)
-    _linkedByIndex[key] = 1;
+    // This is used to show connections
+    _linkedByIndex[linkId(d.source, d.target)] = 1;
   });
 
   const linkForce = forceLink(_links)
     .id(d => d.id)
-    .strength(.1) // very low strength
+    .strength(.05) // low strength
 
   const xForce = forceX(xPos);
   const yForce = forceY(yPos);
@@ -325,8 +332,7 @@ function update() {
   // simulation.force('charge', forceManyBody().strength(10));
   // simulation.force('center', forceCenter(styles.width/2, styles.height/2));
 
-
-  simulation.velocityDecay(0.8);
+  simulation.velocityDecay(0.5);
   simulation.nodes(_nodes);
 }
 
@@ -459,14 +465,14 @@ const foci = {
 const collisionConfig = (d) => {
   let scale = 1.0;
   if (isStory(d)) {
-    scale = 1.0;
+    scale = 0.85;
   }
   else if (isEpic(d)) {
     scale = 1.05;
   }
   else {
     // person
-    scale = 2.5;
+    scale = 3;
   }
   return d.size * scale;
 };
@@ -478,7 +484,12 @@ const xPos = (d => {
   else if (isEpic(d)) {
     return d.x;
   }
+  else {
+    return styles.width * 0.5;
+  }
 
+
+/*
   if (d.rank === 1) {
     return styles.width * 0.1;
   }
@@ -488,6 +499,7 @@ const xPos = (d => {
   else {
     return styles.width * 0.9;
   }
+*/
 });
 
 const yPos = (d) => {

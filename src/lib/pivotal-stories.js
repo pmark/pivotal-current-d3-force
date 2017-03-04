@@ -98,7 +98,7 @@ class PivotalStories {
             x: Constants.ScreenWidth / 2,
             y: Constants.ScreenHeight,
             size: Constants.OwnerRadius,
-            text: ownerName + owner.id,
+            text: ownerName,
             type: 'owner',
             fullName: owner.fullName,
           };
