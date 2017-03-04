@@ -58,7 +58,6 @@ class PivotalStories {
   }
 
   loadEpic(epicName) {
-console.log('ps loadEpic', epicName);
 
     // STORIES
     const storyNodes = Object.keys(parsedStories.stories).filter(storyId => {
@@ -99,7 +98,7 @@ console.log('ps loadEpic', epicName);
             x: Constants.ScreenWidth / 2,
             y: Constants.ScreenHeight,
             size: Constants.OwnerRadius,
-            text: ownerName,
+            text: ownerName + owner.id,
             type: 'owner',
             fullName: owner.fullName,
           };
@@ -109,6 +108,7 @@ console.log('ps loadEpic', epicName);
 
 
     // LINKS
+    const ownerNodes = Object.values(ownerNameMap);
     const links = [];
     storyNodes.forEach(storyNode => {
       storyNode.owners.forEach(ownerName => {
@@ -116,15 +116,16 @@ console.log('ps loadEpic', epicName);
 
         if (ownerNode) {
           links.push({
-            source: ownerNode.id,
-            target: storyNode.id,
+            id: `${ownerNode.id}_${storyNode.id}`,
+            source: ownerNodes.find(d => d.id === ownerNode.id),
+            target: storyNodes.find(d => d.id === storyNode.id),
           });          
         }
       })
     });
 
-    const nodes = Object.values(ownerNameMap).concat(storyNodes);
-    console.log('nodes:', nodes)
+    const nodes = ownerNodes.concat(storyNodes);
+    console.log('links:', links)
     return { nodes, links };
   }
 }

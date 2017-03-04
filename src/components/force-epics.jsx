@@ -90,10 +90,12 @@ const dragend = (d, i) => {
 
 let _svgNodes = null;
 let _svgLinks = null;
-const _linkedByIndex = {};
+let _linkedByIndex = {};
+
+const linkId = (a, b) => `${a.id}_${b.id}`;
 
 function isConnected(a, b) {
-  return _linkedByIndex[a.index + "," + b.index] || _linkedByIndex[b.index + "," + a.index] || a.index == b.index;
+  return _linkedByIndex[linkId(a, b)] || _linkedByIndex[linkId(b, a)] || a.id === b.id;
 }
 
 function fade(nodeOpacity, linkOpacity, reset, component) {
@@ -296,9 +298,33 @@ function update() {
   d3Nodes.call(updateNode);
 
   const d3Links = _d3Graph.selectAll('.link').data(_links);
+
   d3Links.enter().insert('line', '.node').call(enterLink);
   d3Links.exit().remove();
   d3Links.call(updateLink);
+
+  _linkedByIndex = {};
+  _links.forEach(d => {
+    const key = linkId(d.source, d.target);
+    console.log('link key:', key)
+    _linkedByIndex[key] = 1;
+  });
+
+  const linkForce = forceLink(_links)
+    .id(d => d.id)
+    .strength(.1) // very low strength
+
+  const xForce = forceX(xPos);
+  const yForce = forceY(yPos);
+  const collisionForce = forceCollide(collisionConfig);
+
+  simulation.force('y', yForce);
+  simulation.force('x', xForce);
+  simulation.force('link', linkForce);
+  simulation.force('collision', collisionForce);
+  // simulation.force('charge', forceManyBody().strength(10));
+  // simulation.force('center', forceCenter(styles.width/2, styles.height/2));
+
 
   simulation.velocityDecay(0.8);
   simulation.nodes(_nodes);
@@ -335,32 +361,10 @@ class Force extends React.Component {
         id: 'curvedTextPath'
       });
 
+    update = update.bind(this);
+
     _nodes = props.nodes.slice();
     _links = props.links.slice();
-
-    console.log('simSetup nodes:', _nodes);
-
-    _links.forEach(d => {
-      const key = `${d.source},${d.target}`;
-      _linkedByIndex[key] = 1;
-    });
-
-    const linkForce = forceLink(_links)
-      .id(d => d.index)
-      .strength(.0001) // very low strength
-
-    const xForce = forceX(xPos);
-    const yForce = forceY(yPos);
-    const collisionForce = forceCollide(collisionConfig);
-
-    simulation.force('y', yForce);
-    simulation.force('x', xForce);
-    simulation.force('link', linkForce);
-    simulation.force('collision', collisionForce);
-    // simulation.force('charge', forceManyBody().strength(10));
-    // simulation.force('center', forceCenter(styles.width/2, styles.height/2));
-
-    update = update.bind(this);
     update();
 
     this.ready = true;
@@ -385,18 +389,12 @@ class Force extends React.Component {
 
   componentWillReceiveProps(nextProps) {
     console.log('cwrp:', nextProps)
-
-    // _nodes = [];
-    // update();
-
     _nodes = nextProps.nodes.slice();
     _links = nextProps.links.slice();
     update();
-
   }
 
   shouldComponentUpdate(nextProps) {
-    console.log('scu props', nextProps)
     this.simSetup(nextProps);
     return true;
   }
@@ -461,14 +459,14 @@ const foci = {
 const collisionConfig = (d) => {
   let scale = 1.0;
   if (isStory(d)) {
-    scale = 0.66;
+    scale = 1.0;
   }
   else if (isEpic(d)) {
     scale = 1.05;
   }
   else {
     // person
-    scale = 1.25;
+    scale = 2.5;
   }
   return d.size * scale;
 };
