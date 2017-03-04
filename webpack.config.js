@@ -44,7 +44,7 @@ if (TARGET === 'start' || !TARGET) {
           include: path.resolve(ROOT_PATH, 'src'),
           loaders: [
             'react-hot',
-            'babel?presets[]=react,presets[]=es2015'
+            'babel?presets[]=react,presets[]=es2015,presets[]=stage-0'
          ]
         }
       ]

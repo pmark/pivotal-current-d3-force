@@ -4,11 +4,12 @@ import {connect}            from 'react-redux';
 import * as actionCreators  from '../lib/action-creators';
 import * as d3 from 'd3';
 import { forceSimulation, forceManyBody, forceLink, forceCenter, forceCollide, forceX, forceY } from 'd3-force';
+import LibConstants from '../lib/constants';
 
 const styles = {
-  width   : 960,
-  height  : 480,
-  padding : 50,
+  width   : LibConstants.ScreenWidth,
+  height  : LibConstants.ScreenHeight,
+  padding : LibConstants.ScreenPadding,
 };
 
 let Constants = {};
@@ -138,7 +139,7 @@ const click = (d, component) => {
     win.focus();
   }
   else {
-    component.props.randomizeData();
+    component.props.loadEpic(d.text);
     /*
     _nodes = _nodes.filter(n => {
       return n.type === 'owner'
@@ -289,7 +290,7 @@ function update() {
   d3Nodes.enter().append('g').call(enterNode, this); //.call(nodeDrag);
 
   d3Nodes.exit().transition().duration(500)
-    .attr('transform', (d) => `translate(480, -100)`)
+    .attr('transform', (d) => `translate(${Constants.ScreenHeight}, -100)`)
     .remove();
 
   d3Nodes.call(updateNode);
@@ -323,6 +324,8 @@ class Force extends React.Component {
       // console.log('already ready')
       return;
     }
+
+    console.log('simSetup props', props)
     _d3Graph = d3.select(ReactDOM.findDOMNode(this.refs.graph));
 
     _d3Graph.append('defs')
@@ -334,6 +337,8 @@ class Force extends React.Component {
 
     _nodes = props.nodes.slice();
     _links = props.links.slice();
+
+    console.log('simSetup nodes:', _nodes);
 
     _links.forEach(d => {
       const key = `${d.source},${d.target}`;
@@ -362,6 +367,8 @@ class Force extends React.Component {
   }
 
   componentDidMount() {
+    console.log('cdm props', this.props)
+
     this.simSetup(this.props);
 
     simulation.on('tick', tick.bind(this));
@@ -389,6 +396,7 @@ class Force extends React.Component {
   }
 
   shouldComponentUpdate(nextProps) {
+    console.log('scu props', nextProps)
     this.simSetup(nextProps);
     return true;
   }
