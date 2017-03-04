@@ -7,8 +7,6 @@ import Force         from './components/force-epics.jsx';
 import parseStories  from './lib/parse-stories';
 import Constants     from './lib/constants';
 
-console.log('Constants:', Constants)
-
 const stories = require('json!../stories.json');
 
 const parsedStories = parseStories(stories);
@@ -37,7 +35,7 @@ const nodes = [];
 const links = [];
 
 // Add people nodes
-
+/*
 Object.keys(parsedStories.owners).forEach((ownerName) => {
   const owner = parsedStories.owners[ownerName];
   const ownerKey = `owner-${owner.id}`;
@@ -53,8 +51,9 @@ Object.keys(parsedStories.owners).forEach((ownerName) => {
     fullName: owner.fullName,
   });
 });
-
+*/
 /*
+
 // Add stories
 Object.keys(parsedStories.stories).forEach((storyId) => {
   const story = parsedStories.stories[storyId];
@@ -88,14 +87,14 @@ Object.keys(parsedStories.stories).forEach((storyId) => {
     });
   })
 });
-*/
+  */
+
 
 // Add epic nodes
 const labelNames = Object.keys(parsedStories.labels); //.concat(Object.keys(parsedStories.labels));
 const width = 960;
 const leftMargin =  Constants.EpicRadius + Math.max(0, (width / 2) - (labelNames.length * Constants.EpicRadius));
 const div = (width / labelNames.length);
-console.log('leftMargin:', leftMargin)
 
 labelNames.forEach((labelName, index) => {
   const labelStoryCount = parsedStories.labels[labelName];

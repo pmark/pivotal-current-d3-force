@@ -1,6 +1,6 @@
 
 const Constants = {
-  EpicRadius: 60,
+  EpicRadius: 80,
 };
 
 export default Constants;

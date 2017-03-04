@@ -1,6 +1,7 @@
 import { randomizeData } from './core';
 
-export default (state = randomizeData(), action) => {
+export default (state = {}, action) => {
+  console.log('action:', action)
   switch(action.type) {
     case 'RANDOMIZE':
       return randomizeData();

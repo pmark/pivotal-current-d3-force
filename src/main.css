@@ -40,7 +40,7 @@ svg {
   opacity: 1.0;
   font-size: 12px;
   font-family: "Lucida Grande";
-  stroke: gray;
+  /*stroke: gray;*/
   stroke-opacity: 0.66;
   stroke-width: 1px;
 }
@@ -53,6 +53,13 @@ svg {
 .node.story text {
   stroke-opacity: 0.75;
   stroke-width: 1px;
+}
+
+.node.epic-label text {
+  font-size: 18px;
+  fill-opacity: 0.25;
+  stroke-opacity: 1.0;
+  font-family: courier;
 }
 
 .node.story.unstarted,

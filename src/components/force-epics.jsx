@@ -12,7 +12,7 @@ const styles = {
 };
 
 let Constants = {};
-const fill = d3.scale.category20c();
+const fill = d3.scale.category20();
 const simulation = forceSimulation();
 
 let _nodes = null;
@@ -132,17 +132,19 @@ function fade(nodeOpacity, linkOpacity, reset, component) {
   };
 }
 
-const click = (d) => {
+const click = (d, component) => {
   if (isStory(d)) {
     const win = window.open(`https://www.pivotaltracker.com/story/show/${d.id}`, '_blank');
     win.focus();
   }
   else {
-    console.log('clicked', d)
+    component.props.randomizeData();
+    /*
     _nodes = _nodes.filter(n => {
       return n.type === 'owner'
     });
     update();
+    */
   }
 }
 
@@ -177,62 +179,62 @@ const enterNode = (selection, component) => {
       .classed('epic-label', isEpic)
       .classed('feature', isFeature)
       .classed('chore', isChore)
-      .on('click', click)
-      // .on('mouseover', fade(0.075, 0.05, false, component))
-      // .on('mouseout', fade(1.0, 0.25, true, component));
+      .on('click', d => click(d, component))
+      .on('mouseover', fade(0.075, 0.05, false, component))
+      .on('mouseout', fade(1.0, 0.25, true, component));
 
-  selection.filter(isEpic)
+  node.filter(isEpic)
     .append('circle')
     .attr('r', d => d.size)
     .attr('x', d => d.x)
     .attr('y', d => d.y);
 
-  selection.filter(isEpic)
+  node.filter(isEpic)
     .append('text')
+      .attr('stroke', d => d3.rgb(fill(d.id)))
       .attr({
         transform: 'rotate(90, 0, 0)',
       })
-      .append('textPath')
-      .attr({
-        startOffset: '50%',
-        'xlink:href': '#curvedTextPath',
-      })
-      .text(d => d.text);
+        .append('textPath')
+        .attr({
+          startOffset: '50%',
+          'xlink:href': '#curvedTextPath',
+        })
+        .text(d => d.text);
 
-  selection.filter(isPerson)
+  node.filter(isPerson)
     .append('circle')
     .attr('r', d => d.size)
     .attr('x', d => d.x)
     .attr('y', d => d.y);
 
-  selection.filter(isFeature)
+  node.filter(isFeature)
     .append('text')
     .text('★')  // ☆★
     .style('font-size', d => d.size+'px')
     .attr('x', d => -d.size*0.5)
     .attr('y', d => d.size*0.3)
 
-
-  selection.filter(isChore)
+  node.filter(isChore)
     .append('text')
     .text('♦') // ⚙ © ♦ ÷
     .style('font-size', d => d.size+'px')
     .attr('x', d => -d.size*0.5)
     .attr('y', d => d.size*0.3)
 
-  selection.filter(isBug)
+  node.filter(isBug)
     .append('text')
     .text('Ø') // Φ Θ ◉ œ Ø
     .style('font-size', d => d.size+'px')
     .attr('x', d => -d.size*0.5)
     .attr('y', d => d.size*0.33)
 
-  // selection.filter(isStory)
+  // node.filter(isStory)
   //   .append('text')
   //   .text((d) => `${d.labels}: ${d.text}`)
   //   .call(wrapText, 300)
 
-  selection.filter(isPerson)
+  node.filter(isPerson)
     .append('text')
     .attr('x', 0)
     .attr('y', 0)
@@ -281,10 +283,11 @@ const updateGraph = (selection) => {
     .call(updateLink);
 };
 
-const update = () => {
-  const d3Nodes = _d3Graph.selectAll('.node').data(_nodes);
+function update() {
+  const d3Nodes = _d3Graph.selectAll('.node').data(_nodes, d => d.id);
+
   d3Nodes.enter().append('g').call(enterNode, this); //.call(nodeDrag);
-  
+
   d3Nodes.exit().transition().duration(500)
     .attr('transform', (d) => `translate(480, -100)`)
     .remove();
@@ -352,6 +355,7 @@ class Force extends React.Component {
     // simulation.force('charge', forceManyBody().strength(10));
     // simulation.force('center', forceCenter(styles.width/2, styles.height/2));
 
+    update = update.bind(this);
     update();
 
     this.ready = true;
@@ -370,6 +374,18 @@ class Force extends React.Component {
 
     });
     */
+  }
+
+  componentWillReceiveProps(nextProps) {
+    console.log('cwrp:', nextProps)
+
+    // _nodes = [];
+    // update();
+
+    _nodes = nextProps.nodes.slice();
+    _links = nextProps.links.slice();
+    update();
+
   }
 
   shouldComponentUpdate(nextProps) {
