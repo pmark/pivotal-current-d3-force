@@ -33,7 +33,7 @@ class PivotalStories {
   constructor() {
   }
 
-  allEpics() {
+  loadAllEpics() {
     const labelNames = Object.keys(parsedStories.labels); //.concat(Object.keys(parsedStories.labels));
     const width = Constants.ScreenWidth;
     const leftMargin =  Constants.EpicRadius + Math.max(0, (width / 2) - (labelNames.length * Constants.EpicRadius));

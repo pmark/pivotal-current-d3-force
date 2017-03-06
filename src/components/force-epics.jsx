@@ -1,18 +1,19 @@
-import React                from 'react';
+import React from 'react';
 import ReactDOM from 'react-dom';
-import {connect}            from 'react-redux';
-import * as actionCreators  from '../lib/action-creators';
+import {connect} from 'react-redux';
+import * as actionCreators from '../lib/action-creators';
 import * as d3 from 'd3';
 import { forceSimulation, forceManyBody, forceLink, forceCenter, forceCollide, forceX, forceY } from 'd3-force';
-import LibConstants from '../lib/constants';
+import Constants from '../lib/constants';
+import { Route } from 'react-router-dom'
 
 const styles = {
-  width   : LibConstants.ScreenWidth,
-  height  : LibConstants.ScreenHeight,
-  padding : LibConstants.ScreenPadding,
+  width   : Constants.ScreenWidth,
+  height  : Constants.ScreenHeight,
+  padding : Constants.ScreenPadding,
 };
 
-let Constants = {};
+// let Constants = {};
 const fill = d3.scale.category20();
 const simulation = forceSimulation();
 
@@ -70,7 +71,7 @@ const nodeDrag = d3.behavior.drag()
     .on('dragend', dragend);
 
 const dragstart = (d, i) => {
-  console.log('drag')
+  console.info('drag')
     // simulation.force.stop() // stops the force auto positioning before you start dragging
 }
 
@@ -141,7 +142,7 @@ const click = (d, component) => {
     win.focus();
   }
   else {
-    component.props.loadEpic(d.text);
+    window.location.hash = `epics/${encodeURIComponent(d.text)}`;
     /*
     _nodes = _nodes.filter(n => {
       return n.type === 'owner'
@@ -343,19 +344,22 @@ class Force extends React.Component {
 
   constructor(props) {
     super(props);
-    Constants = props.constants;
+
+    console.info('------- new Force --------')
     this.state = {
       headerText: 'Current Sprint',
     };
+
+    this.epicName = null;
   }
 
   simSetup(props) {
     if (this.ready) {
-      // console.log('already ready')
+      // console.info('already ready')
       return;
     }
 
-    console.log('simSetup props', props)
+    console.info('simSetup props', props)
     _d3Graph = d3.select(ReactDOM.findDOMNode(this.refs.graph));
 
     _d3Graph.append('defs')
@@ -366,17 +370,14 @@ class Force extends React.Component {
       });
 
     update = update.bind(this);
-
-    _nodes = props.nodes.slice();
-    _links = props.links.slice();
     update();
 
     this.ready = true;
   }
 
   componentDidMount() {
-    console.log('cdm props', this.props)
-
+    console.info('cdm', this.props)
+    this.updateFromNav(this.props);
     this.simSetup(this.props);
 
     simulation.on('tick', tick.bind(this));
@@ -392,26 +393,52 @@ class Force extends React.Component {
   }
 
   componentWillReceiveProps(nextProps) {
-    console.log('cwrp:', nextProps)
-    _nodes = nextProps.nodes.slice();
-    _links = nextProps.links.slice();
+    console.info('cwrp:', nextProps)
+    this.updateFromNav(nextProps);
     update();
   }
 
   shouldComponentUpdate(nextProps) {
     this.simSetup(nextProps);
+    // console.info('scu', nextProps);
     return true;
   }
 
+  updateFromNav(props) {
+    // const epicName = nextProps.match && nextProps.match.params && nextProps.match.params.epicName;
+    const epicName = decodeURIComponent(props.location && props.location.pathname && props.location.pathname.slice('/epics/'.length)) || '';
+
+    console.info('nav epicName:', epicName, 'cur epic:', this.currentEpicName);
+
+    if (this.currentEpicName !== epicName) {
+      this.currentEpicName = epicName;
+
+      if (epicName) {
+        console.info('Loading epic', epicName);
+        this.props.loadEpic(epicName);
+      }
+      else {
+        console.info('Loading all epics', epicName);
+        this.props.loadAllEpics();
+      }
+    }
+
+    _nodes = (props.nodes && props.nodes.slice()) || [];
+    _links = (props.links && props.links.slice()) || [];
+  }
+
   render() {
-    return <div>
-      <div className='header' style={{width:`${styles.width-32}px`}}>
-        {this.state.headerText}
+    return (
+      <div>
+        <div className='header' style={{width:`${styles.width-32}px`}}>
+          {this.state.headerText}
+        </div>
+        <svg width={styles.width} height={styles.height}> 
+          <g ref='graph' />
+        </svg>      
+        
       </div>
-      <svg width={styles.width} height={styles.height}> 
-        <g ref='graph' />
-      </svg>      
-    </div>
+    );
   }
 
 };
