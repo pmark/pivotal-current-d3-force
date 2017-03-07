@@ -152,7 +152,7 @@ svg {
 .link {
   stroke: lightgray;
   stroke-width: 1px;
-  opacity: 0.25;
+  opacity: 0.5;
   stroke-dasharray: 2 2;
 }
 

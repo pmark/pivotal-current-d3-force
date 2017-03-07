@@ -1,6 +1,6 @@
 
 const Constants = {
-  EpicRadius: 80,
+  EpicRadius: 70,
   StoryRadius: 25,
   OwnerRadius: 25,
   ScreenWidth: 960,

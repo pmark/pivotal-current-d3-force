@@ -142,13 +142,52 @@ const click = (d, component) => {
     win.focus();
   }
   else {
-    window.location.hash = `epics/${encodeURIComponent(d.text)}`;
-    /*
-    _nodes = _nodes.filter(n => {
-      return n.type === 'owner'
-    });
-    update();
-    */
+    if (isPerson(d)) {
+
+      _nodes.filter(isPerson).forEach(n => {
+        if (n.id !== d.id) {
+          n.fx = n.fy = null;
+          // n.x = 0.1 * styles.width;
+          // fade(1.0, 0.25, true, component)(n);
+          
+        }
+      });
+
+      // d.fx = styles.width/2;
+      // d.fy = styles.height/2;
+      // d.fixed = true;
+
+      simulation.nodes(_nodes)
+      // _svgNodes
+      //   .attr('fx', d => null)
+      //   .attr('fy', d => null)
+
+
+      // fade(0.075, 0.05, false, component)(d);
+
+      update();
+
+      const center = { x: styles.width/2, y:styles.height/2 }
+
+      d3.selectAll('.link')
+        .style('opacity', 0);
+
+      d3.select(`#${d.id}`).transition().duration(250)
+        .attr('transform', `translate(${center.x}, ${center.y})`)
+        .attr('x', center.x)
+        .attr('y', center.y)
+        .each('end', d2 => {
+          d2.fx = center.x;
+          d2.fy = center.y;
+          d3.selectAll('.link')
+            .style('opacity', l => isConnected(l, d) ? 1 : 1.0);
+
+        });
+
+    }
+    else {
+      window.location.hash = `epics/${encodeURIComponent(d.text)}`;      
+    }
   }
 }
 
@@ -172,6 +211,7 @@ const enterNode = (selection, component) => {
 
   const node = selection
     .style('opacity', 0.0)
+    .attr('id', d => d.id)
     .attr('class', d => (isPerson(d) ? 'person' : 'story'))
     .classed('node', true)
     .classed('unstarted', isUnstarted)
@@ -186,8 +226,8 @@ const enterNode = (selection, component) => {
     .classed('feature', isFeature)
     .classed('chore', isChore)
     .on('click', d => click(d, component))
-    .on('mouseover', fade(0.075, 0.05, false, component))
-    .on('mouseout', fade(1.0, 0.25, true, component));
+    // .on('mouseover', fade(0.075, 0.05, false, component))
+    // .on('mouseout', fade(1.0, 0.25, true, component));
 
   node.filter(isEpic)
     .append('circle')
@@ -318,21 +358,24 @@ function update() {
 
   const linkForce = forceLink(_links)
     .id(d => d.id)
-    .strength(.025) // low strength
+    .strength(.005) 
+    // .strength(d => d.fixed ? 1.0 : .025) // low strength
 
   const xForce = forceX(xPos);
   const yForce = forceY(yPos);
   const collisionForce = forceCollide(collisionConfig);
 
-  simulation.force('y', yForce);
-  simulation.force('x', xForce);
-  simulation.force('link', linkForce);
-  simulation.force('collision', collisionForce);
-  simulation.force('charge', forceManyBody().strength(-250));
-  // simulation.force('center', forceCenter(styles.width/2, styles.height/2));
-
-  simulation.velocityDecay(0.25);
-  simulation.nodes(_nodes);
+  simulation
+    .force('y', yForce)
+    .force('x', xForce)
+    .force('link', linkForce)
+    .force('collision', collisionForce)
+    // .force('charge', forceManyBody().strength(-250))
+    // .force('center', forceCenter(styles.width/2, styles.height/2))
+    .velocityDecay(0.66)
+    .nodes(_nodes)
+    .alpha(1.0)
+    .restart()
 }
 
 
@@ -455,23 +498,23 @@ function tick() {
 const foci = {
   owner: {
     x: styles.width * 0.5,
-    y: styles.height * 0.8
+    y: styles.height * 0.5
   },
   feature: {
     x: styles.width * 0.5,
-    y: styles.height * 0.4
+    y: styles.height * 0.85
   },
   bug: {
-    x: styles.width * 0.5 - styles.width * 0.5,
-    y: styles.height * 0.15
+    x: styles.width * 0.5,
+    y: styles.height * 0.3
   },
   chore: {
-    x: styles.width * 0.5 + styles.width * 0.5,
-    y: styles.height * 0.025
+    x: styles.width * 0.5,
+    y: styles.height * 0.1
   },
   epic: {
     x: styles.width * 0.5,
-    y: styles.height * 0.15
+    y: styles.height * 0.5
   },
   undefined: {
     x: styles.width * 0.5,
@@ -490,21 +533,25 @@ const foci = {
 const collisionConfig = (d) => {
   let scale = 1.0;
   if (isStory(d)) {
-    scale = 0.85;
+    scale = 1.15;
   }
   else if (isEpic(d)) {
-    scale = 1.05;
+    scale = 1.25;
   }
   else {
     // person
-    scale = 3;
+    scale = 1.95;
   }
   return d.size * scale;
 };
 
 const xPos = (d => {
-  if (isPerson(d)) {
+  if (d.fixed) {
     return styles.width * 0.5;
+  }
+
+  if (isPerson(d)) {
+    return styles.width * 0.25;
   }
   else if (isEpic(d)) {
     return d.x;
@@ -528,9 +575,9 @@ const xPos = (d => {
 });
 
 const yPos = (d) => {
-  if (isEpic(d)) {
-    return d.y;
-  }
+  // if (isEpic(d)) {
+  //   return d.y;
+  // }
 
   return foci[d.type] ? foci[d.type].y : console.assert(false, d.type)
 }

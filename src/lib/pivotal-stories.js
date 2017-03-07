@@ -46,7 +46,7 @@ class PivotalStories {
         key: labelKey,
         id: labelKey,
         x: (width/2) + ((index % 2) ? 1 : -1) * index * (Constants.EpicRadius+5)/4,
-        y: Constants.EpicRadius*2.2,
+        y: Constants.ScreenHeight / 2,
         size: Constants.EpicRadius,
         text: labelName,
         type: 'epic',
@@ -66,15 +66,13 @@ class PivotalStories {
     })
     .map(storyId => {
       const story = parsedStories.stories[storyId];
-      // const storyKey = `${story.storyType}-${nodes.length}`;
-      // const nodeIndex = nodes.length;
       const radius = Constants.StoryRadius;
 
       // Create story node
       return {
-        id: storyId,
-        x: Math.random() * Constants.ScreenWidth,
-        y: Math.random() * Constants.ScreenHeight / 4,
+        id: `story-${storyId}`,
+        x: Constants.ScreenWidth / 2,
+        y: Constants.ScreenHeight * (story.storyType === 'feature' ? 1.0 : 0.0),
         size: Math.max(radius, radius * (story.points+1) * 0.8),
         text: story.name,
         type: story.storyType,
@@ -95,8 +93,8 @@ class PivotalStories {
           const owner = parsedStories.owners[ownerName];
           ownerNameMap[ownerName] = {
             id: `owner-${owner.id}`,
-            x: Constants.ScreenWidth / 2,
-            y: Constants.ScreenHeight,
+            x: 0, //Constants.ScreenWidth / 2,
+            y: Constants.ScreenHeight / 2,
             size: Constants.OwnerRadius,
             text: ownerName,
             type: 'owner',
@@ -125,7 +123,6 @@ class PivotalStories {
     });
 
     const nodes = ownerNodes.concat(storyNodes);
-    console.log('links:', links)
     return { nodes, links };
   }
 }
