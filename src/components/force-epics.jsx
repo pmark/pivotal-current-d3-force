@@ -114,8 +114,9 @@ function fade(nodeOpacity, linkOpacity, reset, component) {
       )});
     }
 
-    d3.select(this).moveToFront().classed('highlight', !reset);
+    // d3.select(this).moveToFront().classed('highlight', !reset);
 
+/*
     _svgNodes.selectAll('circle,text')
     .style('opacity', function(o) {
       const thisOpacity = !reset && isConnected(d, o) ? 1 : nodeOpacity;
@@ -133,6 +134,7 @@ function fade(nodeOpacity, linkOpacity, reset, component) {
 
     _svgLinks.style('opacity', (o) => reset ? linkOpacity : (o.source === d || o.target === d ? 1 : linkOpacity));
     // _svgNodes.selectAll('.node').classed('highlight', (o) => (o.source === d || o.target === d));
+*/
   };
 }
 
@@ -147,30 +149,17 @@ const click = (d, component) => {
       _nodes.filter(isPerson).forEach(n => {
         if (n.id !== d.id) {
           n.fx = n.fy = null;
-          // n.x = 0.1 * styles.width;
-          // fade(1.0, 0.25, true, component)(n);
-          
         }
       });
 
-      // d.fx = styles.width/2;
-      // d.fy = styles.height/2;
-      // d.fixed = true;
-
       simulation.nodes(_nodes)
-      // _svgNodes
-      //   .attr('fx', d => null)
-      //   .attr('fy', d => null)
-
-
-      // fade(0.075, 0.05, false, component)(d);
-
       update();
 
       const center = { x: styles.width/2, y:styles.height/2 }
 
-      d3.selectAll('.link')
-        .style('opacity', 0);
+      // TODO: create links when person is clicked and not before
+      
+      d3.selectAll('.link').transition().style('opacity', 0); //(o) => (o.source === d || o.target === d ? 1 : 0.0));
 
       d3.select(`#${d.id}`).transition().duration(250)
         .attr('transform', `translate(${center.x}, ${center.y})`)
@@ -179,11 +168,31 @@ const click = (d, component) => {
         .each('end', d2 => {
           d2.fx = center.x;
           d2.fy = center.y;
-          d3.selectAll('.link')
-            .style('opacity', l => isConnected(l, d) ? 1 : 1.0);
 
+          // _svgLinks.style('opacity', l => (isConnected(l, d) ? 1.0 : 0.0));
+/*
+          _svgNodes.selectAll('circle,text')
+            .style('opacity', function(o) {
+              const thisOpacity = isConnected(d, o) ? 1 : nodeOpacity;
+              this.setAttribute('opacity', thisOpacity);
+              // this.moveToFront().classed('highlight', !reset);
+              return thisOpacity;
+            });
+
+          _svgNodes.selectAll('text')
+            .style('opacity', function(o) {
+              const thisOpacity = !reset && isConnected(d, o) ? 1 : nodeOpacity;
+              this.setAttribute('opacity', thisOpacity);
+              return thisOpacity;
+            });
+*/
+          // _svgLinks.style('opacity', 0); //(o) => (o.source === d || o.target === d ? 1 : 0.0));
+          // _svgNodes.selectAll('.node').classed('highlight', (o) => (o.source === d || o.target === d));
+
+          d3.selectAll('.link').transition().style('opacity', l => (l.source === d || l.target === d ? 1 : 0.0));
         });
 
+        
     }
     else {
       window.location.hash = `epics/${encodeURIComponent(d.text)}`;      
@@ -226,8 +235,8 @@ const enterNode = (selection, component) => {
     .classed('feature', isFeature)
     .classed('chore', isChore)
     .on('click', d => click(d, component))
-    // .on('mouseover', fade(0.075, 0.05, false, component))
-    // .on('mouseout', fade(1.0, 0.25, true, component));
+    .on('mouseover', fade(0.075, 0.05, false, component))
+    .on('mouseout', fade(1.0, 0.25, true, component));
 
   node.filter(isEpic)
     .append('circle')
@@ -311,7 +320,7 @@ const updateNode = (selection) => {
 const enterLink = (selection) => {
   _svgLinks = selection;
   selection.classed('link', true)
-    .attr('stroke-width', (d) => 2);
+    // .attr('stroke-width', (d) => 2);
 };
 
 const updateLink = (selection) => {
@@ -358,7 +367,7 @@ function update() {
 
   const linkForce = forceLink(_links)
     .id(d => d.id)
-    .strength(.005) 
+    .strength(.05) 
     // .strength(d => d.fixed ? 1.0 : .025) // low strength
 
   const xForce = forceX(xPos);
@@ -372,7 +381,7 @@ function update() {
     .force('collision', collisionForce)
     // .force('charge', forceManyBody().strength(-250))
     // .force('center', forceCenter(styles.width/2, styles.height/2))
-    .velocityDecay(0.66)
+    .velocityDecay(0.8)
     .nodes(_nodes)
     .alpha(1.0)
     .restart()
@@ -533,14 +542,14 @@ const foci = {
 const collisionConfig = (d) => {
   let scale = 1.0;
   if (isStory(d)) {
-    scale = 1.15;
+    scale = 1.5;
   }
   else if (isEpic(d)) {
     scale = 1.25;
   }
   else {
     // person
-    scale = 1.95;
+    scale = 2.0;
   }
   return d.size * scale;
 };
