@@ -30,8 +30,6 @@ const labelRank = (storyLabels=[]) => {
 //
 
 class PivotalStories {
-  constructor() {
-  }
 
   loadAllEpics() {
     const labelNames = Object.keys(parsedStories.labels); //.concat(Object.keys(parsedStories.labels));

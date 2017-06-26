@@ -12,7 +12,7 @@ const parseStories = (stories) => {
     o[key][value] = count;
   };
 
-  const StoryTypesToInclude = ['started', 'unstarted', 'planned', 'finished'];
+  const StoryTypesToInclude = ['started', 'unstarted', 'finished']; //, 'planned'];
 
   stories.forEach((story) => {
 
@@ -29,7 +29,7 @@ const parseStories = (stories) => {
       return short;
     });
 
-    // if (!StoryTypesToInclude.includes(story.current_state)) { return };
+    if (!StoryTypesToInclude.includes(story.current_state)) { return };
 
     const labelArray = (story.labels && story.labels.split(',')) || [];
     labelArray.forEach(label => inc('labels', label));

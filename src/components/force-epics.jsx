@@ -26,6 +26,20 @@ let _d3Graph = null;
 // *****************************************************
 d3.selection.prototype.moveToFront = function() { return this.each(function() { this.parentNode.appendChild(this); }); };
 
+const isPerson = (d) => d.type === 'owner';
+const isStory = (d) => 'bug chore feature'.includes(d.type);
+const isStarted = (d) => d.status === 'started';
+const isUnstarted = (d) => d.status === 'unstarted' || d.status === 'planned';
+const isFinished = (d) => d.status === 'finished';
+const isDelivered = (d) => d.status === 'delivered';
+const isAccepted = (d) => d.status === 'accepted';
+const isRejected = (d) => d.status === 'rejected';
+const isFeature = (d) => d.type === 'feature';
+const isBug = (d) => d.type === 'bug';
+const isEpic = (d) => d.type === 'epic';
+const isChore = (d) => d.type === 'chore';
+const isNotFeature = (d) => d.type !== 'feature';
+
 function wrapText(text, width) {
   text.each(function() {
     var text = d3.select(this),
@@ -50,20 +64,6 @@ function wrapText(text, width) {
     }
   });
 }
-
-const isPerson = (d) => d.type === 'owner';
-const isStory = (d) => 'bug chore feature'.includes(d.type);
-const isStarted = (d) => d.status === 'started';
-const isUnstarted = (d) => d.status === 'unstarted' || d.status === 'planned';
-const isFinished = (d) => d.status === 'finished';
-const isDelivered = (d) => d.status === 'delivered';
-const isAccepted = (d) => d.status === 'accepted';
-const isRejected = (d) => d.status === 'rejected';
-const isFeature = (d) => d.type === 'feature';
-const isBug = (d) => d.type === 'bug';
-const isEpic = (d) => d.type === 'epic';
-const isChore = (d) => d.type === 'chore';
-const isNotFeature = (d) => d.type !== 'feature';
 
 const nodeDrag = d3.behavior.drag()
     .on('dragstart', dragstart)
@@ -140,7 +140,7 @@ function fade(nodeOpacity, linkOpacity, reset, component) {
 
 const click = (d, component) => {
   if (isStory(d)) {
-    const win = window.open(`https://www.pivotaltracker.com/story/show/${d.id}`, '_blank');
+    const win = window.open(`https://www.pivotaltracker.com/story/show/${d.id.replace(/[^0-9]/g, '')}`, '_blank');
     win.focus();
   }
   else {
@@ -240,9 +240,7 @@ const enterNode = (selection, component) => {
 
   node.filter(isEpic)
     .append('circle')
-    .attr('r', d => d.size)
-    .attr('x', d => d.x)
-    .attr('y', d => d.y);
+    .attr('r', d => d.size);
 
   node.filter(isEpic)
     .append('text')
@@ -259,35 +257,22 @@ const enterNode = (selection, component) => {
 
   node.filter(isPerson)
     .append('circle')
-    .attr('r', d => d.size)
-    // .attr('x', d => d.x)
-    // .attr('y', d => d.y);
+    .attr('r', d => d.size);
 
   node.filter(isFeature)
     .append('text')
     .text('★')  // ☆★
-    .style('font-size', d => d.size+'px')
-    // .attr('x', d => -d.size*0.5)
-    // .attr('y', d => d.size*0.3)
+    .style('font-size', d => `${d.size}px`);
 
   node.filter(isChore)
     .append('text')
     .text('♦') // ⚙ © ♦ ÷
-    .style('font-size', d => d.size+'px')
-    // .attr('x', d => -d.size*0.5)
-    // .attr('y', d => d.size*0.3)
+    .style('font-size', d => `${d.size}px`);
 
   node.filter(isBug)
     .append('text')
     .text('Ø') // Φ Θ ◉ œ Ø
-    .style('font-size', d => d.size+'px')
-    // .attr('x', d => -d.size*0.5)
-    // .attr('y', d => d.size*0.33)
-
-  // node.filter(isStory)
-  //   .append('text')
-  //   .text((d) => `${d.labels}: ${d.text}`)
-  //   .call(wrapText, 300)
+    .style('font-size', d => `${d.size}px`);
 
   node.filter(isPerson)
     .append('text')
